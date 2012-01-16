@@ -1,0 +1,114 @@
+<html>
+<head>
+<script type="text/javascript" src="js/lib.js"></script>
+<script>
+	var currentTime = new Array();
+	var pivot = null;
+	var currentSite = null;
+	var currentTab = null;
+	var updateCounterInterval = 1000 * 60; //1 minute
+
+	function updateCounter() {
+		if (localStorage.pause == "true")
+			return;
+		chrome.windows.getAll({
+			"populate" : true
+		}, updateTabs);
+	}
+
+	function updateTabs(windows) {
+		var numWindows = windows.length;
+
+		for ( var i = 0; i < numWindows; i++) {
+			var win = windows[i];
+
+			var numTabs = win.tabs.length;
+			for ( var j = 0; j < numTabs; j++) {
+				var tab = win.tabs[j];
+				var site = getSiteFromURL(tab.url);
+				if (site != null) {
+					if (!localStorage[site])
+						localStorage[site] = 1;
+					else {
+						var time = localStorage[site];
+						time = time * 1 + 1;
+						localStorage[site] = time;//plus 1 minute
+					}
+				}
+			}
+		}
+	}
+
+	function initialize() {
+		window.setInterval(updateCounter, updateCounterInterval);
+	}
+	/*
+	if (!localStorage.sites) {
+		localStorage.sites = JSON.stringify({});
+	}
+	function updateCounter(currentSite) {
+	if (currentSite == null) {
+		console.log("abc");
+		currentSite = getSiteFromURL(currentTab.url);
+		pivot = new Date().getTime();
+		console.log(pivot);
+		console.log(currentTab.url);
+		return;
+	}
+
+	var currentTime = new Date().getTime();
+	var seconds = currentTime - pivot;
+	seconds *= 1;
+	var sites = JSON.parse(localStorage.sites);
+	if (!sites[currentSite]) {
+		sites[currentSite] = 0;
+	}
+
+	sites[currentSite] += seconds;
+	localStorage.sites = JSON.stringify(sites);
+	console.log("seconds: " + seconds);
+	console.log("UpdateCounter, currentSite:  " + currentSite
+			+ " localStorage: " + sites[currentSite]);
+	if(!localStorage[currentSite]){
+		localStorage[currentSite] = 0;
+	}
+	console.log("localStorage[" + currentSite + "]: " + localStorage[currentSite]);
+	}
+
+	chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+
+		//if(changeInfo.status == "complete"){
+		currentTab = tab;
+		updateCounter(currentSite);
+		currentSite = getSiteFromURL(tab.url);
+		pivot = new Date().getTime();
+		console.log("Tab updated, currentSite: " + currentSite);
+		// }
+	});
+	chrome.tabs.onActiveChanged.addListener(function(tabId, selectInfo) {
+		chrome.tabs.getSelected(null, function(tab) {//get current tab
+			currentTab = tab;
+			updateCounter(currentSite);
+			currentSite = getSiteFromURL(tab.url);
+			pivot = new Date().getTime();
+			console.log("Tab active changed, currentSite: " + currentSite);
+		});
+	});
+	
+	 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo){
+
+	 //localStorage["test"] = "abc";
+	 console.log("Tab closed: " + tabId);
+	 chrome.tabs.get(tabId, function(tab){
+	 console.log("Tab closed: " + tab.url);
+	 });
+	
+	 });*/
+</script>
+</head>
+<body>
+	<script>
+		initialize();
+	</script>
+</body>
+</html>

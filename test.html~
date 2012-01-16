@@ -1,0 +1,11 @@
+<html>
+<script>
+var jsonobj={"name":"George", "age":29, "friends":["John", "Sarah", "Albert"]};
+var jsonstr=JSON.stringify(jsonobj);
+var url = "https://www.facebook.com/tuyennq";
+var siteRegexp = /^(\w+:\/\/[^\/]+).*$/;
+var match = url.match(siteRegexp);
+document.write(url + "<br>"); //string
+document.write(match);
+</script>
+</html>

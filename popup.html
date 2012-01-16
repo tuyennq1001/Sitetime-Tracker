@@ -1,0 +1,203 @@
+<!DOCTYPE>
+<!--
+ * Copyright (c) 2011 Jordi Corbilla. All rights reserved.  
+-->
+<html>
+<head>
+<script type="text/javascript" src="js/popup.js"></script>
+<script src="http://code.jquery.com/jquery-1.7.1.min.js"
+	type="text/javascript"></script>
+<script src="js/iphone-style-checkboxes.js" type="text/javascript"
+	charset="utf-8"></script>
+<link rel="stylesheet" href="style.css" type="text/css" media="screen"
+	charset="utf-8" />
+<style type="text/css">
+body {
+	padding: 10px;
+}
+
+th {
+	text-align: left;
+	padding: 4px;
+	padding-right: 15px;
+	vertical-align: top;
+	font-family: Verdana;
+	font-size: 14px;
+}
+
+tr {
+	font-family: Verdana, Courier;
+	font-size: 11px;
+}
+
+.current_stuff { //
+	color: red;
+	font-style: oblique;
+	font-weight: bold;
+}
+
+.total_stuff {
+	//text-decoration: overline;
+}
+
+.toggle_checkbox .iPhoneCheckContainer {
+	width: 50px;
+	height: 30px;
+}
+#header-button {
+	background: url("images/close.png") top right no-repeat;
+	display: block;
+	float: right;
+	height: 16px;
+	margin-top: 2px;
+	width: 16px;
+}
+#header-button:hover {
+	background: url("images/close-hover.png") top right no-repeat;
+	cursor: pointer;
+}
+#header-button:active {
+	background: url("images/close-active.png") top right no-repeat;
+}
+</style>
+<script type="text/javascript">
+	$(window).load(function() {
+		$('.current_stuff :checkbox').iphoneStyle();
+		$('.toggle_checkbox :checkbox').iphoneStyle({
+			resizeContainer : false,
+			resizeHandle : false
+		});
+		$('.listed_stuff :checkbox').iphoneStyle();
+		$('#header-button').on("click", function() {
+			self.close();
+		});
+	});
+	var oneHour = 60;//1 hour in minute
+	var site = null;
+	var time = 0;
+
+	function initialize() {
+		if (!localStorage.pause)
+			localStorage.pause = "false";//localStorage only stores string value
+		
+
+		var sortedSites = new Array();
+		var totalTime = 0;
+		var top = 10;
+		for ( var i = 0; i < localStorage.length; i++) {
+			site = localStorage.key(i);
+			time = localStorage.getItem(site);
+			if (site == "pause")
+				continue;
+			sortedSites.push([ site, time ]);
+			totalTime += time * 1;
+
+		}
+
+		chrome.tabs.getSelected(null, function(tab) {
+			var currentURL = tab.url
+			var currentSite = getSiteFromURL(currentURL);
+			if (currentSite != null) {
+				var csTime = localStorage.getItem(currentSite);
+				var csHours = Math.floor(csTime / oneHour);
+				var csMinutes = Math.floor(csTime - csHours * oneHour);
+				$('#currentSite_time').text(csHours + "h:" + csMinutes + "'");
+				$('#currentSite_percent').text(
+						Math.round((csTime / totalTime) * 10000) / 100 + "%");
+			} else
+				currentSite = currentURL;
+			$('#currentSite').text(currentSite);
+			console.log(currentSite);
+		});
+
+		sortedSites.sort(function(a, b) {
+			return b[1] - a[1];
+		});
+		var table = document.getElementById("myTable");
+		console.log(top);
+		for ( var j = 0; (j < top) && (j < sortedSites.length); j++) {
+			site = sortedSites[j][0];
+			time = sortedSites[j][1];
+			var hours = Math.floor(time / oneHour);
+			var minutes = Math.floor(time - hours * oneHour);
+			var row = table.insertRow(-1);
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			var cell3 = row.insertCell(2);
+			var cell4 = row.insertCell(3);
+			
+			row.setAttribute('class', 'listed_stuff');
+			cell1.innerHTML = site;
+			cell2.innerHTML = hours + "h:" + minutes + "'";
+			cell3.innerHTML = Math.round((time / totalTime) * 10000) / 100
+					+ "%";
+			var chkbox = document.createElement("input");
+	        chkbox.type = "checkbox";
+	        chkbox.checked = "checked";
+	        cell4.appendChild(chkbox);
+			
+		}
+
+		var totalHours = Math.floor(totalTime / oneHour);
+		var totalMinutes = Math.floor(totalTime - totalHours * oneHour);
+		var row = table.insertRow(-1);
+		var cell1 = row.insertCell(0);
+		var cell2 = row.insertCell(1);
+		var cell3 = row.insertCell(2);
+		var cell4 = row.insertCell(3);
+		
+		row.setAttribute('class', 'total_stuff');
+		cell1.innerHTML = "Total";
+		cell2.innerHTML = totalHours + "h:" + totalMinutes + "'";
+		cell3.innerHTML = "100%";
+		var chkbox = document.createElement('input');
+		chkbox.type = 'checkbox';
+		cell4.appendChild(chkbox);
+		console.log(totalTime);
+		if (localStorage.pause == "true")
+			$('.total_stuff :checkbox').prop("checked", false);
+		else
+			$('.total_stuff :checkbox').prop("checked", true);
+		($('.total_stuff :checkbox')).iphoneStyle({
+			onChange : function() {
+				if (localStorage.pause == "false")
+					localStorage.pause = "true";
+				else
+					localStorage.pause = "false";
+				console.log("Pause changed, new value: " + localStorage.pause);
+			}
+		});
+
+	}
+</script>
+</head>
+<body>
+<div id="header-elements">
+	<div id="header-button"></div>
+</div>
+	<table id="myTable" width=350>
+		
+		<tr>
+			<th>Website</th>
+			<th>Time</th>
+			<th>Percent</th>
+			<th>Tracking</th>
+		</tr>
+		<tr>
+			<td colspan=4><hr size=1></td>
+		</tr>
+		<tr class="current_stuff">
+			<td id="currentSite"></td>
+			<td id="currentSite_time"></td>
+			<td id="currentSite_percent"></td>
+			<td><input type="checkbox"></td>
+		</tr>
+		<tr>
+			<td colspan=4><hr size=1></td>
+		</tr>
+	</table>
+	<script>
+		initialize();
+	</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<script>
+		function URLmatch(url){
+		var regex = /^https?:\/\/(www\d\.)?([^\/]+).*$/;
+		var match = url.match(regex);
+		return match[2];
+	}
+      chrome.tabs.getAllInWindow(null, function(tabs) {
+        tabs.forEach(function(tab){
+			//saveToLocalStorage(URLmatch(tab.url));  
+			alert(URLmatch(tab.url));  
+        });
+      });
+	
+      function saveToLocalStorage(url) {
+        var currentDate = new Date();
+		var currentTime = currentDate.getTime();
+		var value = localStorage.getItem(url);
+		if(value == undefined){
+			localStorage.setItem(url, currentTime); 
+		}
+      }
+	  
+	  chrome.tabs.getAllInWindow(null, function(tabs){
+  tabs.forEach(function(tab){
+    alert("Hello world\n" + tab.url);
+  });
+});
+</script>

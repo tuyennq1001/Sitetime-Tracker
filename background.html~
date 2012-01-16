@@ -1,0 +1,55 @@
+<script>
+var currentTime = new Array();
+var pivot = null;
+var currentSite = null;
+var currentSite = null;
+var currentTab = null;
+function getSiteFromURL(url){
+		var regex = /^https?:\/\/(www\d\.)?([^\/]+).*$/;
+		var match = url.match(regex);	
+		//console.log(match);
+		if(match) return match[2];
+		else return null;
+	}	
+	 
+function updateCounter(currentSite){
+	if(currentSite == null){
+		console.log("abc");
+		currentSite = getSiteFromURL(currentTab.url);
+		pivot = new Date().getTime();
+		console.log(pivot);
+		console.log(currentTab.url);	
+		return;
+	}
+  	 
+	var currentTime = new Date().getTime();
+	var seconds = currentTime - pivot;
+	seconds *= 1;
+	var sites = JSON.parse(localStorage.sites);
+	console.log(sites);
+}
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab){
+	
+	//if(changeInfo.status == "complete"){
+		currentTab = tab;
+	  	updateCounter(currentSite);
+  		currentSite = getSiteFromURL(tab.url);
+  		pivot = new Date().getTime();
+		console.log("Tab updated, currentSite: " + currentSite);
+ // }
+});
+chrome.tabs.onActiveChanged.addListener(function(tabId, selectInfo){
+	console.log("Tab active changed");
+});
+/*
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo){
+
+		//localStorage["test"] = "abc";
+		console.log("Tab closed: " + tabId);
+			chrome.tabs.get(tabId, function(tab){
+		console.log("Tab closed: " + tab.url);
+	});
+	
+});*/
+</script>
